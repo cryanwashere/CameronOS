@@ -3,30 +3,20 @@
 
 mov ah, 0x0e		; int 10/ah = 0eh -> scrolling teletype BIOS routine
 
-mov al, the_secret
-int 0x10
 
-mov al, [the_secret]
-int 0x10
+mov bp, 0x8000		; Set the base of the stack above where BIOS loads the boot sector
+mov sp, bp
 
 
-mov bx, the_secret
-add bx, 0x7c00
-mov al, [bx]
-int 0x10
-
-mov al, [0x7c1e]
-int 0x10
-
-
+print_function:
+	mov ah, 0x0e
+	int 0x10
+	ret 
 
 
 jmp $			; Jump to the current address
 
-the_secret:
-	db "X"
-
 times 510-($-$$) db 0	; Pad the boot sector with zeros
-dw 0xaa55		; last two bytes form the magic number, so BIOS knows that it is a boot sector
-
+dw 0xaa55		; last two bytes form the magic number, so BIOS knows that it is a 
+			; boot sector
 

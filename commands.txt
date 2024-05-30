@@ -1,0 +1,5 @@
+qemu-system-x86_64 bootsect.bin
+
+nasm bootsect.asm -f bin  -o bootsect.bin
+
+od -t x1 -A n bootsect.bin
