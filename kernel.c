@@ -58,14 +58,16 @@ size_t strlen(const char* str)
 }
 
 
+
+
 /* define constants regarding the dimensions of the terminal */
-static const size_t VGA_WIDTH;
-static const size_t VGA_HEIGHT;
-
-
+static const size_t VGA_WIDTH = 80;
+static const size_t VGA_HEIGHT = 25;
 
 size_t terminal_row;
 size_t terminal_column;
+size_t terminal_index; // the index of the cursor in video memory
+
 uint8_t terminal_color; 
 uint16_t* terminal_buffer;
 
@@ -74,7 +76,7 @@ void terminal_initialize(void)
 {
 	terminal_row = 0; 
 	terminal_column = 0; 
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_LIGHT_BLUE);
 	terminal_buffer = (uint16_t*) 0xB8000;
 	for (size_t y = 0; y < VGA_HEIGHT; y++) {
 		for (size_t x = 0; x < VGA_WIDTH; x++) {
@@ -89,19 +91,24 @@ void terminal_setcolor(uint8_t color)
 	terminal_color = color; 
 }
 
-void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
-	const size_t index = y * VGA_WIDTH + x;
-	terminal_buffer[index] = vga_entry(c, color);
+void terminal_put_entry_at_index(char c, size_t index) {
+	terminal_buffer[index] = vga_entry(c, terminal_color);
 }
 
 void terminal_putchar(char c)
-{
-	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == VGA_WIDTH){
-		terminal_column = 0;
-		if (++ terminal_row == VGA_HEIGHT) {
-			terminal_row = 0;
-		}
+{	
+	// if the char is a new line character, then move to the next line
+	if (c == '\n') {
+		
+		// how many spaces have been taken up in the current terminal row
+		size_t cursor_mod = terminal_index % VGA_WIDTH;
+		
+		// increase the terminal index by the number of spaces that are left
+		terminal_index += VGA_WIDTH - cursor_mod;
+		
+	} else {
+		terminal_put_entry_at_index(c, terminal_index);
+		terminal_index++;
 	}
 }
 
@@ -122,7 +129,7 @@ void kernel_main(void)
 	terminal_initialize();
 
 	/* Write a message to the terminal */
-	terminal_writestring("Hello, World!");
+	terminal_writestring("Welcome to CameronOS\nHere is some more text that I am just writing to see if it will eventually just be put on a new line!");
 }
 
 
