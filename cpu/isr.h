@@ -1,8 +1,9 @@
 #ifndef ISR_H
 #define ISR_H
 
-/* ISRS reserved for CPU exceptions. They are marked 'extern' because they are to be called in assembly*/
+#include <stdint.h>
 
+/* ISRS reserved for CPU exceptions. They are marked 'extern' because they are to be implemented in assembly*/
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -45,5 +46,11 @@ typedef struct {
    uint32_t eip, cs, eflags, useresp, ss; /* Pushed by the processor automatically */
 } registers_t;
 
+
+// create every entry in the interrupt descriptor table, and then load its register with the CPU
+void isr_install();
+
+// handle an interrupt
+void isr_handler(); 
 
 #endif

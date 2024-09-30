@@ -1,6 +1,8 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include <stddef.h>
+
 /* Hardware text mode color contants */
 enum vga_color {
 	VGA_COLOR_BLACK			= 0,

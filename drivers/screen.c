@@ -1,9 +1,7 @@
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include "screen.h"
-
-
-
-
-
 
 /* Get the length of a string */
 size_t strlen(const char* str)
@@ -25,7 +23,6 @@ size_t terminal_index; // the index of the cursor in video memory
 
 uint8_t terminal_color; 
 uint16_t* terminal_buffer;
-
 
 void terminal_initialize(void) 
 {
