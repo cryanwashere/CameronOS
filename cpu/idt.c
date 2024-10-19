@@ -8,7 +8,7 @@ interrupt_descriptor idt[256];
 
 
 // put an entry into the interrupt descriptor table 
-void set_idt_entry(uint8_t vector, void* handler)
+void set_idt_entry(uint8_t vector, void * handler)
 {
 	
 	//uint8_t dpl = 0;

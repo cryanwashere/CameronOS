@@ -26,8 +26,10 @@ uint16_t* terminal_buffer;
 
 void terminal_initialize(void) 
 {
+	// Set the position of the cursor
 	terminal_row = 0; 
 	terminal_column = 0; 
+	// get the color of the terminal background
 	terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_LIGHT_BLUE);
 	terminal_buffer = (uint16_t*) 0xB8000;
 	for (size_t y = 0; y < VGA_HEIGHT; y++) {

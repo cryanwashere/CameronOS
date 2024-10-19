@@ -27,11 +27,11 @@ void kernel_main(void)
 	/* Write a message to the terminal */
 	terminal_writestring("Welcome to CameronOS!\n");
 
-	terminal_writestring("Attempting to load IDT table\n");
+	terminal_writestring("Attempting to load IDT table...\n");
 
 	isr_install();
 
-	init_keyboard();
+	//init_keyboard();
     /* Test the interrupts */
     //__asm__ __volatile__("int $2");
     //__asm__ __volatile__("int $3");
