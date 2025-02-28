@@ -1,6 +1,7 @@
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/screen.h"
+#include "../drivers/ports.c"
 #include <stdint.h>
 
 
@@ -107,4 +108,12 @@ void isr_handler(registers_t r)
 	int_to_ascii(r.int_no, s);
 	terminal_writestring(exception_messages[r.int_no]);
 	
+}
+
+void irq_handler(registers_t r)
+
+{
+    if (r.int_no >= 40) outb(0xA0, 0x20);
+    outb(0x20, 0x20);
+
 }

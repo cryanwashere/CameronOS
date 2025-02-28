@@ -6,7 +6,6 @@
 #include "../cpu/idt.h"
 #include "../cpu/isr.h"
 
-
 /* make sure the compiler does not think you are targeting the wrong operating system */
 #if defined(__linux__)
 #error "You are not using a cross compiler, you will most certainly run into trouble"
@@ -27,13 +26,15 @@ void kernel_main(void)
 	/* Write a message to the terminal */
 	terminal_writestring("Welcome to CameronOS!\n");
 
-	terminal_writestring("Attempting to load IDT table\n");
+	terminal_writestring("Attempting to install IDT table...\n");
 
 	isr_install();
 
-	init_keyboard();
+	terminal_writestring("Finished installing IDT table. Proceeding to test interrupts...");
+
+	//init_keyboard();
     /* Test the interrupts */
-    //__asm__ __volatile__("int $2");
-    //__asm__ __volatile__("int $3");
+    __asm__ __volatile__("int $2");
+    __asm__ __volatile__("int $3");
 
 }
