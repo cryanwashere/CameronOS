@@ -15,6 +15,5 @@ void keyboard_driver_irq_handler()
 }
 */
 
-#include <stdint.h>
-#include "screen.h"
-#include "../cpu/isr.h"x
+#include "keyboard.h"
+#include "ports.h"

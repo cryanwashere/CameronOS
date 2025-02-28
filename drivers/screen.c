@@ -19,6 +19,7 @@ static const size_t VGA_HEIGHT = 25;
 
 size_t terminal_row;
 size_t terminal_column;
+size_t terminal_buffer_size = VGA_WIDTH * VGA_HEIGHT; // the size of the terminal buffer
 size_t terminal_index; // the index of the cursor in video memory
 
 uint8_t terminal_color; 
@@ -52,6 +53,12 @@ void terminal_put_entry_at_index(char c, size_t index)
 
 void terminal_putchar(char c)
 {	
+	// make sure that the terminal index is not too high (A better way to delegate this problem will be implemented later when I am able to use the keyboard) 
+	// for now, just start printing back at the top of the screen 
+	if (terminal_index+1 >= terminal_buffer_size) {
+		terminal_index = 0;
+	}
+
 	// if the char is a new line character, then move to the next line
 	if (c == '\n') {
 		

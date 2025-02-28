@@ -1,0 +1,1 @@
+qemu-system-i386 -kernel bin/CameronOS.bin

@@ -1,10 +1,12 @@
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/screen.h"
-#include "../drivers/ports.c"
+#include "../drivers/ports.h"
 #include <stdint.h>
+#include "../kernel/util.h"
 
-
+isr_t interrupt_handlers[256];
+ 
 /* To print the message which defines every exception */
 char *exception_messages[] = {
     "Division By Zero",
@@ -83,37 +85,78 @@ void isr_install() {
     set_idt_entry(30, (void *)isr30);
     set_idt_entry(31, (void *)isr31);
 
+    // Remap the PIC
+    // I don't really understand what this does at the moment
+    port_byte_out(0x20, 0x11);
+    port_byte_out(0xA0, 0x11);
+    port_byte_out(0x21, 0x20);
+    port_byte_out(0xA1, 0x28);
+    port_byte_out(0x21, 0x04);
+    port_byte_out(0xA1, 0x02);
+    port_byte_out(0x21, 0x01);
+    port_byte_out(0xA1, 0x01);
+    port_byte_out(0x21, 0x0);
+    port_byte_out(0xA1, 0x0); 
+
+
+
+    // Install the IRQs
+    set_idt_entry(32, (void *)irq0);
+    set_idt_entry(33, (void *)irq1);
+    set_idt_entry(34, (void *)irq2);
+    set_idt_entry(35, (void *)irq3);
+    set_idt_entry(36, (void *)irq4);
+    set_idt_entry(37, (void *)irq5);
+    set_idt_entry(38, (void *)irq6);
+    set_idt_entry(39, (void *)irq7);
+    set_idt_entry(40, (void *)irq8);
+    set_idt_entry(41, (void *)irq9);
+    set_idt_entry(42, (void *)irq10);
+    set_idt_entry(43, (void *)irq11);
+    set_idt_entry(44, (void *)irq12);
+    set_idt_entry(45, (void *)irq13);
+    set_idt_entry(46, (void *)irq14);
+    set_idt_entry(47, (void *)irq15);
+
+
     terminal_writestring("loading IDT\n");
     load_idt(); // Load the interrupt descriptor table
 }
 
-void int_to_ascii(int n, char str[]) {
-    int i, sign;
-    if ((sign = n) < 0) n = -n;
-    i = 0;
-    do {
-        str[i++] = n % 10 + '0';
-    } while ((n /= 10) > 0);
 
-    if (sign < 0) str[i++] = '-';
-    str[i] = '\0';
 
-    /* TODO: implement "reverse" */
-}
-
+// this is run when an interrupt is called
+// this function gets called in interrupt.asm
 void isr_handler(registers_t r)
 {
-	terminal_writestring("\n recieved interrupt: ");
+    // communicate that there has been an interrupt
+	terminal_writestring("\n(isr_handler) recieved interrupt: ");
+    // get the interrupt number that is in the register
 	char s[3];
 	int_to_ascii(r.int_no, s);
+    // print out the exception message that corresponds to the interrupt that has been called
 	terminal_writestring(exception_messages[r.int_no]);
+
+    terminal_writestring(" (message finished)");
 	
 }
 
-void irq_handler(registers_t r)
+void register_interrupt_handler(u8 n, isr_t handler) {
+    interrupt_handlers[n] = handler; 
+}
 
+// IRQ stands for interrupt request
+
+void irq_handler(registers_t r)
 {
-    if (r.int_no >= 40) outb(0xA0, 0x20);
-    outb(0x20, 0x20);
+    // after the interrupt, we need to send an EOI (End Of Interrupt) to the PICs or they will not send another interrupt
+    if (r.int_no >= 40) port_byte_out(0xA0,0x20); // slave
+    port_byte_out(0x20,0x20); // master
+
+    // handle the interrupt
+    if (interrupt_handlers[r.int_no] != 0) {
+        isr_t handler = interrupt_handlers[r.int_no];
+        handler(r);
+    }
 
 }

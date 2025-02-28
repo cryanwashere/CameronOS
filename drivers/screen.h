@@ -3,6 +3,9 @@
 
 #include <stddef.h>
 
+// this one is kind of iffy
+#include <stdint.h>
+
 /* Hardware text mode color contants */
 enum vga_color {
 	VGA_COLOR_BLACK			= 0,
