@@ -1,42 +1,49 @@
 #include "idt.h"
+#include "types.h"
 #include <stdint.h>
 #include "../drivers/screen.h"
 
 
-// This is the interrupt descriptor table. It contains 256 entries.
-interrupt_descriptor idt[256];
+
+// This is where we declare the IDT
+interrupt_gate_t idt[256];
+// create the pointer of the IDT
+idtr idt_reg; 
+
+
+
+// Get the high and low offsets from an address
+#define low_16(address) (u16)((address) & 0xFFFF)
+#define high_16(address) (u16)(((address) >> 16) & 0xFFFF)
 
 
 // put an entry into the interrupt descriptor table 
-void set_idt_entry(uint8_t vector, void * handler)
+void set_idt_entry(int n, void * handler)
 {
 	
-	//uint8_t dpl = 0;
+	
 
-	// convert the address of the handler function
-	uint64_t handler_addr = (uint32_t) handler;
+	// convert the address of the handler function to u32
+	u32 handler_addr = (u32) handler;
 
-	interrupt_descriptor* entry = &idt[vector];
-	entry->address_low = handler_addr & 0xFFFF;
-	entry->address_mid = (handler_addr >> 16) & 0xFFFF;
-	entry->address_high = handler_addr >> 32;
-	entry->selector = 0x8;
-	//entry->flags = 0b1110 | ((dpl & 0b11) << 5) | (1 << 7);
-	entry->flags = 0x8E;
-	entry->ist = 0;
+	// set the IDT gate
+	idt[n].low_offset = low_16(handler_addr);
+	idt[n].sel = KERNEL_CS;
+	idt[n].always0 = 0;
+	idt[n].flags = 0x8E;
+	idt[n].high_offset = high_16(handler_addr);
+
+	
 }
-
 
 
 // Load the interrupt descriptor table
 void load_idt()
 {	
-	void * idt_addr = &idt;
-	
-	idtr idt_reg; 
-    idt_reg.limit = 0xFFF;
-    idt_reg.base = (uint32_t)idt_addr;
+	// idt_reg is declared in idt.h
+    idt_reg.limit = 256 * sizeof(interrupt_gate_t) - 1;
+    idt_reg.base = (u32) &idt;
     //asm volatile("lidt %0" :: "m"(&idt_reg));
     __asm__ __volatile__("lidtl (%0)" : : "r" (&idt_reg));
-	terminal_writestring("finished loading IDT\n");
+	terminal_writestring("(load_idt) finished loading IDT\n");
 }
